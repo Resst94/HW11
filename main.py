@@ -114,7 +114,8 @@ class AddressBook(UserDict):
 
     def add_record(self, obj):
         self.data[str(obj.name)] = obj
-        print(f"Key {obj.name} with value {obj.phones} added")
+        phone_numbers = [phone.value for phone in obj.phones]
+        print(f"Key {obj.name} with value {phone_numbers} added")
 
     def find(self, name):
         if name in self.data:
