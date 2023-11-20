@@ -1,37 +1,39 @@
 from datetime import datetime
 from collections import UserDict
+import re
 
 class Field:
     
     def __init__(self, value):
-        self._value = None
+        self.__value = None
         self.value = value
 
     @property
     def value(self):
-        return self._value
+        return self.__value
 
     @value.setter
     def value(self, new_value):
         self._validate(new_value)
-        self._value = new_value
+        self.__value = new_value
 
     def _validate(self, value):
         pass
 
     def __str__(self):
-        return str(self._value)
+        return str(self.__value)
 
 class Name(Field):
     """class for validate name field"""
 
     def _validate(self, value):
-        if len(value) < 1 or not value.isalpha():
-            raise ValueError("Name must be at least one character long")
-        
-        print(f'{value} is valid name')
-        super()._validate(value)
+        name_pattern = re.compile(r'^[a-zA-Z0-9а-яА-Я\s]+$')
 
+        if len(value) < 1 or not name_pattern.match(value):
+            raise ValueError("Invalid name format")
+
+        print(f'{value} is a valid name')
+        super()._validate(value)
 class Phone(Field):
     """class for validate phone field"""
 
