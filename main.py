@@ -1,6 +1,7 @@
 from datetime import datetime
 from collections import UserDict
 import re
+import pickle
 
 class Field:
     
@@ -106,6 +107,20 @@ class Record:
             return days_until_birthday
         else:
             raise ValueError('Birthday is not set')
+        
+    def to_dict(self):
+        return {
+            'name': self.name.value,
+            'phones': [phone.value for phone in self.phones],
+            'birthday': self.birthday.value if self.birthday else None
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        record = cls(name=data['name'], birthday=data['birthday'])
+        for phone in data['phones']:
+            record.add_phone(phone)
+        return record
             
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -134,6 +149,34 @@ class AddressBook(UserDict):
     def iterator(self, n=1):
         for i in range(0, len(self.data), n):
             yield list(self.data.values())[i:i + n]
+
+    def save_to_disk(self, filename):
+        with open(filename, 'wb') as file:
+            data = [record.to_dict() for record in self.data.values()]
+            pickle.dump(data, file)
+            print(f"Address book saved to {filename}")
+
+    def load_from_disk(self, filename):
+        try:
+            with open(filename, 'rb') as file:
+                data = pickle.load(file)
+                self.data.clear()
+                for record_data in data:
+                    record = Record.from_dict(record_data)
+                    self.data[str(record.name)] = record
+                print(f"Address book loaded from {filename}")
+        except FileNotFoundError:
+            print("File not found. Creating a new address book.")
+
+    def search_contacts(self, query):
+        results = []
+        for record in self.data.values():
+            if (
+                query.lower() in record.name.value.lower() or
+                any(query in phone.value for phone in record.phones)
+            ):
+                results.append(record)
+        return results
 
 if __name__ == '__main__':
     address_book = AddressBook()
